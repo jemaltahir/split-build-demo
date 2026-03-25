@@ -9,12 +9,6 @@ oc new-build https://github.com/<your-user>/split-build-demo.git \
   --context-dir=builder
 ```
 
-Run build:
-
-```bash
-oc start-build builder-demo --follow
-```
-
 ---
 
 ### 2. Create App Build
@@ -25,7 +19,18 @@ oc new-build https://github.com/<your-user>/split-build-demo.git \
   --strategy=docker
 ```
 
+This will fail withy error:
+
+```bash 
+STEP 2/7: WORKDIR /app
+--> ea50c7cd1e01
+STEP 3/7: COPY /deps /usr/local
+error: build error: building at STEP "COPY /deps /usr/local": checking on sources under "/tmp/build/inputs": copier: stat: "/deps": no such file or directory
+```
+
 ---
+
+The following pathc needed to fix to find the source image builder context.
 
 ### 3. Connect Builder → App (Cache Reuse)
 
@@ -74,10 +79,12 @@ oc expose deployment app-demo --port=8080
 
 ---
 
-### 6. Expose Route
+### 6. Create Route
 
 ```bash
-oc expose svc app-demo
+oc create route edge app-demo \
+  --service=app-demo \
+  --port=8080
 ```
 
 ---
@@ -91,7 +98,7 @@ oc get route
 Then:
 
 ```bash
-curl http://<ROUTE_URL>; echo
+curl https://<ROUTE_URL>; echo
 ```
 
 ---
